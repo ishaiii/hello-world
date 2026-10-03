@@ -1,8 +1,8 @@
 import { Menu } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Brand } from '../shared/Logo';
-import { site } from '../site.config';
 import { GUIDES, TOOLS, type RouteDef } from './routes';
+import { appHref, site } from '../site.config';
 
 function Header({ route }: { route: RouteDef }) {
   const current = (p: string) => (route.path === p ? ('page' as const) : undefined);
@@ -18,7 +18,7 @@ function Header({ route }: { route: RouteDef }) {
               Guides
             </a>
           </div>
-          <a className="btn btn--primary btn--sm" href="/app/">
+          <a className="btn btn--primary btn--sm" href={appHref()}>
             Compare files
           </a>
           <details className="nav__menu">
@@ -61,7 +61,7 @@ function Footer() {
                 </li>
               ))}
               <li>
-                <a href="/app/">Open the workspace</a>
+                <a href={appHref()}>Open the workspace</a>
               </li>
             </ul>
           </div>

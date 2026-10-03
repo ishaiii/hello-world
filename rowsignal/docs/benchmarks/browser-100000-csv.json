@@ -1,0 +1,24 @@
+{
+ "rows": 100000,
+ "kind": "csv",
+ "fieldsCompared": 11,
+ "addFileAms": 326,
+ "addFileBms": 214,
+ "compareClickToResultsMs": 8232,
+ "scrollMidMs": 29,
+ "searchMs": 409,
+ "domRowsRendered": {
+  "top": 20,
+  "afterScroll": 28
+ },
+ "longestMainThreadTaskMs": 539,
+ "longTasksOver200ms": 3,
+ "mainThreadHeapMB": 153,
+ "summary": "We paired 96,489 records. 91,402 agree, 5,087 have differences. Review unmatched records below.",
+ "shown": "Showing 10 of 103,000 result rows ·  Clear filters",
+ "env": {
+  "chromium": "141.0.7390.37",
+  "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+  "cores": 4
+ }
+}

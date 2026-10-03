@@ -5,6 +5,7 @@ import { buildDiagnostics } from '../../shared/diagnostics';
 import { storageEstimate } from '../../storage/db';
 import { listProjects, listRecipes, useWorkspace, type ProjectMeta, type RecipeSummary } from '../workspace';
 import { Modal } from './Modal';
+import { publicHref } from '../../site.config';
 
 const when = (ts: number) => new Date(ts).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' });
 
@@ -404,7 +405,7 @@ export function HelpDialog({ open, onClose }: { open: boolean; onClose: () => vo
             Your data
           </h3>
           <p>
-            Files are read and compared in this browser tab. They are not uploaded, and nothing is saved unless you choose to. <a href="/privacy">Read the privacy page</a> and <a href="/methodology">how matching works</a>.
+            Files are read and compared in this browser tab. They are not uploaded, and nothing is saved unless you choose to. <a href={publicHref('/privacy')}>Read the privacy page</a> and <a href={publicHref('/methodology')}>how matching works</a>.
           </p>
         </section>
         <section className="stack-sm" aria-labelledby="h5">

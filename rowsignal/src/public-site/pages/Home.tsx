@@ -3,6 +3,7 @@ import { StaticResultTable, CtaBand, Faq, HeroPreview, LaunchButton, TrustList }
 import { summarySentence } from '../../shared/summary';
 import { ReorderDemo } from '../islands';
 import type { PageProps } from '../types';
+import { appHref } from '../../site.config';
 
 const FAQ = [
   {
@@ -67,11 +68,11 @@ export function Home({ runs }: PageProps) {
             <h1 id="hero-h">Two spreadsheets. A clear answer.</h1>
             <p className="hero__lead">Compare orders, inventory, and everyday business records. Find missing rows, changed values, and duplicates—without building another formula.</p>
             <div className="hero__actions">
-              <LaunchButton href="/app/">
+              <LaunchButton href={appHref()}>
                 Compare my files
                 <ArrowRight size={18} aria-hidden="true" />
               </LaunchButton>
-              <LaunchButton href="/app/?sample=1" variant="secondary">
+              <LaunchButton href={appHref('?sample=1')} variant="secondary">
                 Try sample comparison
               </LaunchButton>
             </div>
@@ -196,7 +197,7 @@ export function Home({ runs }: PageProps) {
           </div>
           <StaticResultTable run={orders} caption="All twelve result rows of the sample comparison" />
           <div className="hero__actions">
-            <LaunchButton href="/app/?sample=1" variant="secondary" size="md">
+            <LaunchButton href={appHref('?sample=1')} variant="secondary" size="md">
               Open this result in RowSignal
             </LaunchButton>
             <LaunchButton href="/methodology" variant="secondary" size="md">

@@ -25,3 +25,18 @@ export const site = {
   /** Analytics: off by default; no sink is installed unless the owner adds one. */
   analyticsEnabled: false,
 } as const;
+
+const trimSlash = (v: string) => v.replace(/\/+$/, '');
+
+/**
+ * Where the workspace lives. By default it is the same origin at /app/. To host the marketing site
+ * and the workspace on different origins (so no public script can ever share an origin with real
+ * data), set VITE_APP_URL for the public build and VITE_PUBLIC_URL for the workspace build.
+ */
+const appBase = env.VITE_APP_URL ? `${trimSlash(env.VITE_APP_URL)}/` : '/app/';
+const publicBase = trimSlash(env.VITE_PUBLIC_URL ?? '');
+
+/** Link from a public page into the workspace, e.g. `appHref('?sample=1')`. Always a full page navigation. */
+export const appHref = (query = ''): string => `${appBase}${query}`;
+/** Link from the workspace back to a public page, e.g. `publicHref('/privacy')`. */
+export const publicHref = (path = '/'): string => `${publicBase}${path}`;

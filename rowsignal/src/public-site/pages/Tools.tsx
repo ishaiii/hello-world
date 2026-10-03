@@ -3,17 +3,18 @@ import { PageHead } from '../Layout';
 import { AdSlot, CtaBand, LaunchButton, RelatedLinks, WorkedExample } from '../parts';
 import { routeFor } from '../routes';
 import type { PageProps } from '../types';
+import { appHref } from '../../site.config';
 
 function Aside({ preset, related }: { preset: string; related: string[] }) {
   return (
     <aside className="aside-card" aria-label="Start a comparison">
       <h2 className="h-sm">Start here</h2>
       <p className="muted">Open the workspace with the right labels already in place. Your files stay on your device.</p>
-      <LaunchButton href={`/app/?preset=${preset}`} size="md">
+      <LaunchButton href={appHref(`?preset=${preset}`)} size="md">
         Compare my files
         <ArrowRight size={16} aria-hidden="true" />
       </LaunchButton>
-      <LaunchButton href="/app/?sample=1" variant="secondary" size="md">
+      <LaunchButton href={appHref('?sample=1')} variant="secondary" size="md">
         Try sample comparison
       </LaunchButton>
       <h3 className="h-xs">Related</h3>

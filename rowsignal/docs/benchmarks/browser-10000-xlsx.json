@@ -1,0 +1,24 @@
+{
+ "rows": 10000,
+ "kind": "xlsx",
+ "fieldsCompared": 11,
+ "addFileAms": 438,
+ "addFileBms": 324,
+ "compareClickToResultsMs": 1395,
+ "scrollMidMs": 15,
+ "searchMs": 129,
+ "domRowsRendered": {
+  "top": 20,
+  "afterScroll": 28
+ },
+ "longestMainThreadTaskMs": 91,
+ "longTasksOver200ms": 0,
+ "mainThreadHeapMB": 26,
+ "summary": "We paired 9,642 records. 9,140 agree, 502 have differences. Review unmatched records below.",
+ "shown": "Showing 10 of 10,300 result rows ·  Clear filters",
+ "env": {
+  "chromium": "141.0.7390.37",
+  "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+  "cores": 4
+ }
+}

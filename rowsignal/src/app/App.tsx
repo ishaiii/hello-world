@@ -8,6 +8,7 @@ import { ResultsStep } from './components/ResultsStep';
 import { RulesStep } from './components/RulesStep';
 import { useWorkspace, WorkspaceProvider } from './workspace';
 import type { Step } from './state';
+import { publicHref } from '../site.config';
 
 const STEPS: Array<{ id: Step; label: string; sub: string }> = [
   { id: 'files', label: 'Files', sub: 'Add two files' },
@@ -38,7 +39,7 @@ function Shell() {
     <div className="app">
       <header className="app-header">
         <div className="app-header__inner">
-          <Brand href="/" />
+          <Brand href={publicHref('/')} />
           <div className="field app-header__name">
             <label className="sr-only" htmlFor="cmp-name">
               Comparison name
@@ -100,7 +101,7 @@ function Shell() {
         </div>
       </main>
       <footer className="app-footer">
-        Files are processed on this device and are not uploaded. <a href="/privacy">Privacy</a> · <a href="/methodology">How matching works</a>
+        Files are processed on this device and are not uploaded. <a href={publicHref('/privacy')}>Privacy</a> · <a href={publicHref('/methodology')}>How matching works</a>
       </footer>
       <ProgressDialog />
       <DiscardDialog onSaveFirst={() => setDialog('save-project')} />

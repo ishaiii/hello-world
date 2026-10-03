@@ -8,6 +8,7 @@ import type { ExampleRun } from '../sample/runExample';
 import { adsConfigured } from './ads';
 import { FileId } from '../shared/FileId';
 import { ROUTES } from './routes';
+import { appHref } from '../site.config';
 
 const ORDER: Record<Category, number> = { matched: 0, different: 1, 'only-a': 2, 'only-b': 3, ambiguous: 4, invalid: 5 };
 
@@ -123,7 +124,7 @@ export function WorkedExample({ run, title, children, launch = true }: { run: Ex
       <StaticResultTable run={run} caption={`Result of comparing ${run.info.A.fileName} with ${run.info.B.fileName}`} />
       {launch && (
         <div>
-          <a className="btn btn--secondary btn--sm" href={`/app/?example=${run.example.id}`}>
+          <a className="btn btn--secondary btn--sm" href={appHref(`?example=${run.example.id}`)}>
             <Sparkles size={15} aria-hidden="true" />
             Open this example in RowSignal
           </a>
@@ -190,11 +191,11 @@ export function CtaBand({ title = 'Find out what changed.', text = 'Open the wor
         <h2 id="cta-h">{title}</h2>
         <p>{text}</p>
         <div className="hero__actions">
-          <LaunchButton href={preset ? `/app/?preset=${preset}` : '/app/'} variant="primary">
+          <LaunchButton href={preset ? appHref(`?preset=${preset}`) : appHref()} variant="primary">
             Compare my files
             <ArrowRight size={18} aria-hidden="true" />
           </LaunchButton>
-          <LaunchButton href="/app/?sample=1" variant="secondary">
+          <LaunchButton href={appHref('?sample=1')} variant="secondary">
             Try sample comparison
           </LaunchButton>
         </div>

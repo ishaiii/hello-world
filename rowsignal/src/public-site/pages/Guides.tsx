@@ -9,13 +9,14 @@ import { ReorderDemo } from '../islands';
 import { AdSlot, CtaBand, RelatedLinks, StaticResultTable, WorkedExample } from '../parts';
 import { routeFor } from '../routes';
 import type { PageProps } from '../types';
+import { appHref } from '../../site.config';
 
 function GuideAside({ related }: { related: string[] }) {
   return (
     <aside className="aside-card" aria-label="Related">
       <h2 className="h-sm">Keep reading</h2>
       <RelatedLinks paths={related} />
-      <a className="btn btn--primary btn--sm" href="/app/?sample=1">
+      <a className="btn btn--primary btn--sm" href={appHref('?sample=1')}>
         Try sample comparison
       </a>
     </aside>

@@ -13,13 +13,14 @@
     "build:client": "vite build",
     "build:ssr": "vite build --ssr src/public-site/entry-server.tsx --outDir dist-ssr",
     "prerender": "node scripts/prerender.mjs",
-    "build": "tsc --noEmit && npm run build:client && npm run build:ssr && npm run prerender",
+    "build": "tsc --noEmit && npm run build:client && npm run build:ssr && npm run prerender && npm run check:dist",
     "preview": "node scripts/serve.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "fixtures": "tsx scripts/make-fixtures.ts"
+    "fixtures": "tsx scripts/make-fixtures.ts",
+    "check:dist": "node scripts/check-dist.mjs"
   },
   "dependencies": {
     "@fontsource-variable/inter": "5.3.0",

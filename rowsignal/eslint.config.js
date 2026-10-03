@@ -28,7 +28,7 @@ export default tseslint.config(
   },
   {
     files: ['**/*.{js,mjs}'],
-    languageOptions: { globals: { ...globals.node } },
+    languageOptions: { globals: { ...globals.node, ...globals.browser } }, // scripts drive a browser via page.evaluate
   },
   {
     // Build scripts, tests and e2e are allowed to print.

@@ -1287,3 +1287,7 @@ dialog.dialog--drawer[open] {
 .filechip:focus-visible {
   outline-offset: 2px;
 }
+.filecard__title .fileid {
+  font-size: 0.875rem;
+  padding: 4px 12px;
+}

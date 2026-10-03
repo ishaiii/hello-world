@@ -1,11 +1,11 @@
 import { PageHead } from '../Layout';
 import { DEFAULT_LIMITS, formatBytes } from '../../import/limits';
-import { site } from '../../site.config';
 import { summarySentence } from '../../shared/summary';
 import { StaticResultTable } from '../parts';
 import { DiagnosticsButton } from '../islands';
 import { routeFor } from '../routes';
 import type { PageProps } from '../types';
+import { appHref, site } from '../../site.config';
 
 const Single = ({ children }: { children: React.ReactNode }) => (
   <div className="container page-body page-body--single">
@@ -283,7 +283,7 @@ export function NotFoundPage() {
       <article className="prose">
         <h1>Page not found</h1>
         <p>
-          That page does not exist. You can go to the <a href="/">home page</a> or open the <a href="/app/">workspace</a>.
+          That page does not exist. You can go to the <a href="/">home page</a> or open the <a href={appHref()}>workspace</a>.
         </p>
       </article>
     </div>
