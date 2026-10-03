@@ -127,7 +127,7 @@ export function ResultsStep({ onSaveRecipe, onSaveProject }: { onSaveRecipe: () 
   const [hiddenFields, setHiddenFields] = useState<string[]>([]);
   const [pinKey, setPinKey] = useState(true);
   const [mode, setMode] = useState<'scroll' | 'pages' | 'cards'>(() => (typeof window !== 'undefined' && window.matchMedia?.('(max-width: 720px)').matches ? 'cards' : 'scroll'));
-  const [page, setPage] = useState(0);
+  const [pageState, setPageState] = useState({ sig: '', page: 0 });
   const [detailId, setDetailId] = useState<string | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
   const [nextDismissed, setNextDismissed] = useState(false);
@@ -138,10 +138,11 @@ export function ResultsStep({ onSaveRecipe, onSaveProject }: { onSaveRecipe: () 
   const fields = useMemo(() => result.config.fields.map((rule, index) => ({ rule, index })), [result.config.fields]);
   const shownFields = fields.filter((f) => !hiddenFields.includes(f.rule.id));
 
+  const hasQuery = deferredQuery.trim() !== '';
   const searchIndex = useMemo(() => {
-    if (deferredQuery.trim() === '') return null;
+    if (!hasQuery) return null;
     return result.rows.map((r) => [keyDisplay(r), ...(r.aVals ?? []), ...(r.bVals ?? []), r.summary, ...r.aRows.map(String), ...r.bRows.map(String)].join('\u0001').toLowerCase());
-  }, [result.rows, deferredQuery === '']); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [result.rows, hasQuery]);
 
   const filtered = useMemo(() => {
     const q = deferredQuery.trim().toLowerCase();
@@ -171,9 +172,12 @@ export function ResultsStep({ onSaveRecipe, onSaveProject }: { onSaveRecipe: () 
   }, [result, cats, review, deferredQuery, searchIndex, sort, state.annotations]);
 
   const filtersActive = cats.length > 0 || review !== 'all' || query.trim() !== '';
+  // The page resets whenever the filters, search or sort change — derived, not reset in an effect.
+  const sig = JSON.stringify([cats, review, deferredQuery, sort]);
+  const page = pageState.sig === sig ? pageState.page : 0;
+  const setPage = (fn: (p: number) => number) => setPageState({ sig, page: fn(page) });
   const perPage = mode === 'cards' ? PAGE_SIZE / 2 : PAGE_SIZE;
   const pageCount = Math.max(1, Math.ceil(filtered.length / perPage));
-  useEffect(() => setPage(0), [cats, review, deferredQuery, sort]);
   const ids = useMemo(() => filtered.map((r) => r.id), [filtered]);
 
   // "/" jumps to search, unless typing somewhere.

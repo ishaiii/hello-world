@@ -99,7 +99,7 @@ describe('worker protocol', () => {
       return w;
     }, 30);
     const onReset = vi.fn();
-    client.onReset = onReset;
+    client.setOnReset(onReset);
     const rows = ['id,v'];
     for (let i = 0; i < 60000; i++) rows.push(`${i},${i}`);
     const big = buf(rows.join('\n'));

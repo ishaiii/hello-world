@@ -1,5 +1,5 @@
 import { flushSync } from 'react-dom';
-import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, type ReactNode } from 'react';
 import { validateConfig, cloneConfig, newFieldRule, newKeyRule, type ConfigIssue } from '../engine/config';
 import type { Analysis } from '../engine/diagnostics';
 import { resolvePortable, toPortable, type SchemaIssue } from '../engine/portable';
@@ -18,6 +18,7 @@ import { summarySentence } from '../shared/summary';
 import { useFeedback } from './feedback';
 import { inputsKey, initialState, isStale, reducer, type Action, type AppState, type Step } from './state';
 import { PRESETS } from './presets';
+import { track, type ErrorCategory } from '../analytics/events';
 
 export interface Blocker {
   id: string;
@@ -62,6 +63,10 @@ export interface Workspace {
   wipeProjects: () => Promise<void>;
   newComparison: () => void;
   workerResets: () => number;
+  /** Run `fn` now, or after the user confirms when it would replace unsaved work. */
+  guard: (fn: () => void) => void;
+  guardPending: boolean;
+  resolveGuard: (ok: boolean) => void;
 }
 
 const Ctx = createContext<Workspace | null>(null);
@@ -93,6 +98,18 @@ export function describeError(e: unknown): string {
 
 const hasRules = (c: MatchConfig) => c.keys.length > 0 || c.fields.length > 0;
 
+function errorCategory(e: unknown): ErrorCategory {
+  const code = e instanceof JobError ? e.code : '';
+  if (code === 'unsupported-type' || code === 'type-mismatch') return 'unsupported-type';
+  if (code === 'file-too-large' || code === 'xlsx-too-large') return 'too-large';
+  if (code === 'too-many-rows' || code === 'too-many-cells' || code === 'too-many-columns') return 'too-many-rows';
+  if (code === 'xlsx-ole' || code === 'xlsx-encrypted') return 'password-protected';
+  if (code.startsWith('xlsx') || code === 'csv-binary') return 'corrupt-file';
+  if (code === 'config-invalid') return 'config-invalid';
+  if (e instanceof WorkerResetError) return 'worker-failure';
+  return 'other';
+}
+
 export function computeBlockers(state: AppState): Blocker[] {
   const out: Blocker[] = [];
   const a = state.files.A.info;
@@ -114,14 +131,31 @@ export function computeBlockers(state: AppState): Blocker[] {
 export function WorkspaceProvider({ children, initialUrl }: { children: ReactNode; initialUrl?: string }) {
   const [state, dispatch] = useReducer(reducer, undefined, initialState);
   const stateRef = useRef(state);
-  stateRef.current = state;
+  useLayoutEffect(() => {
+    stateRef.current = state;
+  });
   const [client] = useState(() => new WorkerClient(createBrowserWorker));
   const fb = useFeedback();
   const fbRef = useRef(fb);
-  fbRef.current = fb;
+  useLayoutEffect(() => {
+    fbRef.current = fb;
+  });
   const jobs = useRef<{ compare?: Job<ComparisonResult>; suggest?: Job<unknown> }>({});
   const [busy, setBusy] = useState(false);
   const bootRef = useRef(false);
+  const [guardFn, setGuardFn] = useState<(() => void) | null>(null);
+  const guard = useCallback((fn: () => void) => {
+    const s = stateRef.current;
+    const hasWork = s.dirty && !s.sample && (s.files.A.status === 'ready' || s.files.B.status === 'ready');
+    if (hasWork) setGuardFn(() => fn);
+    else fn();
+  }, []);
+  const resolveGuard = useCallback((ok: boolean) => {
+    setGuardFn((fn) => {
+      if (ok && fn) setTimeout(fn, 0);
+      return null;
+    });
+  }, []);
 
   // ---- helpers -----------------------------------------------------------------------------
   /** Dispatch and commit immediately, for async flows that read the committed state next. */
@@ -188,6 +222,7 @@ export function WorkspaceProvider({ children, initialUrl }: { children: ReactNod
         const message = describeError(e);
         dispatch({ type: 'file-error', role, message });
         fbRef.current.announce(`File ${role} could not be added. ${message}`);
+        track({ name: 'import_failed', category: errorCategory(e) });
         return null;
       }
     },
@@ -239,7 +274,7 @@ export function WorkspaceProvider({ children, initialUrl }: { children: ReactNod
       fbRef.current.announce(`File ${role} added: ${info.dataRowCount.toLocaleString('en-US')} data rows, ${info.columns.length} columns.`);
       await afterLoad(role, oldInfo, info);
     },
-    [afterLoad, loadBytes],
+    [afterLoad, loadBytes, sync],
   );
 
   const addFiles = useCallback(
@@ -258,7 +293,7 @@ export function WorkspaceProvider({ children, initialUrl }: { children: ReactNod
       sync({ type: 'file-removed', role });
       fbRef.current.announce(`File ${role} removed.`);
     },
-    [client],
+    [client, sync],
   );
 
   const reparse = useCallback(
@@ -282,7 +317,7 @@ export function WorkspaceProvider({ children, initialUrl }: { children: ReactNod
         toast(message, 'error');
       }
     },
-    [client, fetchHints, reconcile, toast],
+    [client, fetchHints, reconcile, sync, toast],
   );
 
   const swapFiles = useCallback(async () => {
@@ -310,7 +345,7 @@ export function WorkspaceProvider({ children, initialUrl }: { children: ReactNod
     } finally {
       setBusy(false);
     }
-  }, [client, fetchHints, toast]);
+  }, [client, fetchHints, sync, toast]);
 
   // ---- rules ---------------------------------------------------------------------------------
   const updateConfig = useCallback((fn: (c: MatchConfig) => MatchConfig) => {
@@ -389,6 +424,7 @@ export function WorkspaceProvider({ children, initialUrl }: { children: ReactNod
       const result = await job.promise;
       dispatch({ type: 'run-done', result, key });
       fbRef.current.announce(`Comparison finished. ${summarySentence(result.summary)}`);
+      track({ name: 'comparison_completed', seconds: Math.round(result.elapsedMs / 100) / 10, usedRecipe: stateRef.current.schema?.recipeName != null });
     } catch (e) {
       if (e instanceof JobError && e.cancelled) {
         dispatch({ type: 'run-cancelled' });
@@ -480,6 +516,7 @@ export function WorkspaceProvider({ children, initialUrl }: { children: ReactNod
       try {
         const out = await client.call('export', { options, annotations: s.annotations }).promise;
         download(out.bytes, out.filename, out.mime);
+        track({ name: 'result_exported', format: opts.format });
         toast(`Exported ${out.resultRows.toLocaleString('en-US')} result rows to ${out.filename}. The file was created on this device.`, 'success');
         return { filename: out.filename, notes: out.notes };
       } catch (e) {
@@ -512,6 +549,7 @@ export function WorkspaceProvider({ children, initialUrl }: { children: ReactNod
         const recipe = makeRecipe(name, { A: s.roleNames.A, B: s.roleNames.B }, { A: currentFileSettings('A'), B: currentFileSettings('B') }, toPortable(s.config, a.columns, b.columns));
         const saved = await saveRecipe(recipe);
         toast(`Recipe “${saved.name}” saved on this device. It holds your rules, not your data.`, 'success');
+        track({ name: 'recipe_saved' });
         return saved;
       } catch (e) {
         toast(describeError(e), 'error');
@@ -529,6 +567,7 @@ export function WorkspaceProvider({ children, initialUrl }: { children: ReactNod
           toast('That recipe could not be found.', 'error');
           return;
         }
+        track({ name: 'recipe_reused' });
         const s = stateRef.current;
         if (s.files.A.status === 'ready' && s.files.B.status === 'ready') {
           // Re-read with the recipe's file settings (sheet, header row, delimiter), then resolve.
@@ -689,6 +728,7 @@ export function WorkspaceProvider({ children, initialUrl }: { children: ReactNod
     async (id: string, opts: { run?: boolean } = {}) => {
       const ex = EXAMPLES[id];
       if (!ex) return;
+      track({ name: 'sample_opened' });
       dispatch({ type: 'reset' });
       for (const role of ['A', 'B'] as const) {
         const f = ex.files[role];
@@ -742,11 +782,11 @@ export function WorkspaceProvider({ children, initialUrl }: { children: ReactNod
 
   // A restarted worker has lost its results; anything shown must be treated as out of date.
   useEffect(() => {
-    client.onReset = () => {
+    client.setOnReset(() => {
       toast('The background worker was restarted. Run the comparison again to refresh results.', 'info');
       const s = stateRef.current;
       if (s.result) dispatch({ type: 'set-result', result: s.result });
-    };
+    });
   }, [client, toast]);
 
   // Warn before leaving with unsaved work in memory.
@@ -822,8 +862,11 @@ export function WorkspaceProvider({ children, initialUrl }: { children: ReactNod
       wipeProjects,
       newComparison,
       workerResets: () => client.resetCount,
+      guard,
+      guardPending: guardFn !== null,
+      resolveGuard,
     }),
-    [state, busy, goto, addFile, addFiles, removeFile, swapFiles, reparse, loadExample, updateConfig, applySuggestedMapping, addKey, addField, compare, cancelRun, getDetail, setAnnotation, findPossible, cancelSuggest, linkRows, unlinkRows, exportResults, saveRecipeAs, useRecipe, importRecipeFile, exportRecipe, removeRecipe, wipeRecipes, saveProjectAs, openProject, removeProject, wipeProjects, newComparison, client],
+    [state, busy, goto, addFile, addFiles, removeFile, swapFiles, reparse, loadExample, updateConfig, applySuggestedMapping, addKey, addField, compare, cancelRun, getDetail, setAnnotation, findPossible, cancelSuggest, linkRows, unlinkRows, exportResults, saveRecipeAs, useRecipe, importRecipeFile, exportRecipe, removeRecipe, wipeRecipes, saveProjectAs, openProject, removeProject, wipeProjects, newComparison, client, guard, guardFn, resolveGuard],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

@@ -1,5 +1,5 @@
 import { ArrowLeft, ArrowRight, Check, CircleAlert, CircleCheck, Diff, Info, LoaderCircle } from 'lucide-react';
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import type { FieldStatus } from '../../engine/types';
 import { StatusBadge } from '../../shared/status';
 import type { FieldDetail, RowDetail } from '../../worker/session';
@@ -137,33 +137,40 @@ function ReviewBox({ rowId }: { rowId: string }) {
 }
 
 export function DetailDialog({ rowId, ids, onNavigate, onClose }: { rowId: string | null; ids: string[]; onNavigate: (id: string) => void; onClose: () => void }) {
+  return (
+    <Modal open={rowId !== null} onClose={onClose} title="Row details" wide className="dialog--drawer">
+      {rowId !== null && <DetailBody key={rowId} rowId={rowId} ids={ids} onNavigate={onNavigate} />}
+    </Modal>
+  );
+}
+
+function DetailBody({ rowId, ids, onNavigate }: { rowId: string; ids: string[]; onNavigate: (id: string) => void }) {
   const ws = useWorkspace();
   const [detail, setDetail] = useState<RowDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const row = useMemo(() => (rowId ? ws.state.result?.rows.find((r) => r.id === rowId) : undefined), [rowId, ws.state.result]);
-  const pos = rowId ? ids.indexOf(rowId) : -1;
+  const row = useMemo(() => ws.state.result?.rows.find((r) => r.id === rowId), [rowId, ws.state.result]);
+  const pos = ids.indexOf(rowId);
 
+  const getDetail = ws.getDetail;
   useEffect(() => {
-    if (!rowId) return;
     let live = true;
-    setDetail(null);
-    setError(null);
-    ws.getDetail(rowId)
+    getDetail(rowId)
       .then((d) => live && setDetail(d))
       .catch((e) => live && setError(describeError(e)));
     return () => {
       live = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rowId]);
+  }, [rowId, getDetail]);
 
-  const go = (d: -1 | 1) => {
-    const next = ids[pos + d];
-    if (next) onNavigate(next);
-  };
+  const go = useCallback(
+    (d: -1 | 1) => {
+      const next = ids[pos + d];
+      if (next) onNavigate(next);
+    },
+    [ids, pos, onNavigate],
+  );
 
   useEffect(() => {
-    if (!rowId) return;
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT')) return;
@@ -173,15 +180,13 @@ export function DetailDialog({ rowId, ids, onNavigate, onClose }: { rowId: strin
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rowId, pos, ids]);
+  }, [go]);
 
   const names = (r: 'A' | 'B') => ws.state.roleNames[r].trim();
   const both = row ? row.category === 'matched' || row.category === 'different' : false;
 
+  if (!row) return null;
   return (
-    <Modal open={rowId !== null} onClose={onClose} title="Row details" wide className="dialog--drawer">
-      {row && (
         <div className="detail stack" data-testid="detail">
           <div className="detail__top">
             <StatusBadge row={row} />
@@ -320,7 +325,5 @@ export function DetailDialog({ rowId, ids, onNavigate, onClose }: { rowId: strin
             <Info size={14} aria-hidden="true" className="inline-icon" /> Press <kbd>J</kbd> / <kbd>K</kbd> for the next / previous row.
           </p>
         </div>
-      )}
-    </Modal>
   );
 }

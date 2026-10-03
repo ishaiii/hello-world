@@ -1,5 +1,5 @@
 import { BookMarked, Check, Download, FolderOpen, HardDrive, Keyboard, LoaderCircle, Shield, Trash2, Upload } from 'lucide-react';
-import { useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { DEFAULT_LIMITS, formatBytes } from '../../import/limits';
 import { buildDiagnostics } from '../../shared/diagnostics';
 import { storageEstimate } from '../../storage/db';
@@ -21,7 +21,8 @@ function ConfirmButton({ label, confirmLabel, onConfirm, small = true }: { label
   }
   return (
     <span className="row" role="group" aria-label="Confirm">
-      <button type="button" className={`btn btn--danger ${small ? 'btn--sm' : ''}`} onClick={() => { setAsking(false); onConfirm(); }} autoFocus>
+      <button type="button" className={`btn btn--danger ${small ? 'btn--sm' : ''}`} onClick={() => { setAsking(false); onConfirm(); }} autoFocus // eslint-disable-line jsx-a11y/no-autofocus -- focus follows the control the user just activated
+      >
         {confirmLabel}
       </button>
       <button type="button" className={`btn btn--ghost ${small ? 'btn--sm' : ''}`} onClick={() => setAsking(false)}>
@@ -73,24 +74,28 @@ export function ProgressDialog() {
 
 // ------------------------------------------------------------------------------------------
 export function RecipesDialog({ open, onClose, initialName }: { open: boolean; onClose: () => void; initialName: string }) {
+  return (
+    <Modal open={open} onClose={onClose} title="Recipes" wide>
+      <RecipesBody onClose={onClose} initialName={initialName} />
+    </Modal>
+  );
+}
+
+function RecipesBody({ onClose, initialName }: { onClose: () => void; initialName: string }) {
   const ws = useWorkspace();
   const [recipes, setRecipes] = useState<RecipeSummary[] | null>(null);
-  const [name, setName] = useState(initialName);
+  const [name, setName] = useState(initialName || 'My recipe');
   const nameId = useId();
   const fileRef = useRef<HTMLInputElement>(null);
   const both = ws.state.files.A.status === 'ready' && ws.state.files.B.status === 'ready';
   const hasRules = ws.state.config.keys.length > 0;
 
-  const refresh = () => listRecipes().then(setRecipes).catch(() => setRecipes([]));
+  const refresh = useCallback(() => listRecipes().then(setRecipes).catch(() => setRecipes([])), []);
   useEffect(() => {
-    if (open) {
-      setName(initialName || 'My recipe');
-      void refresh();
-    }
-  }, [open, initialName]);
+    void refresh();
+  }, [refresh]);
 
   return (
-    <Modal open={open} onClose={onClose} title="Recipes" wide>
       <div className="stack">
         <p className="muted">
           A recipe remembers <strong>how you matched</strong> two files — columns by header name, rules and file settings — so next week you only add the new files. It never contains your rows.
@@ -163,7 +168,6 @@ export function RecipesDialog({ open, onClose, initialName }: { open: boolean; o
         </div>
         <p className="help">Imported files are checked strictly and treated only as data; anything unexpected is rejected.</p>
       </div>
-    </Modal>
   );
 }
 
@@ -209,7 +213,7 @@ export function SavedDialog({ open, onClose }: { open: boolean; onClose: () => v
                   </span>
                 </span>
                 <span className="row">
-                  <button type="button" className="btn btn--primary btn--sm" onClick={() => { void ws.openProject(p.id); onClose(); }}>
+                  <button type="button" className="btn btn--primary btn--sm" onClick={() => { onClose(); ws.guard(() => void ws.openProject(p.id)); }}>
                     Open
                   </button>
                   <ConfirmButton label="Delete" confirmLabel="Delete project" onConfirm={() => void ws.removeProject(p.id).then(refresh)} />
@@ -416,6 +420,36 @@ export function HelpDialog({ open, onClose }: { open: boolean; onClose: () => vo
           </div>
         </section>
       </div>
+    </Modal>
+  );
+}
+
+// ------------------------------------------------------------------------------------------
+export function DiscardDialog({ onSaveFirst }: { onSaveFirst: () => void }) {
+  const ws = useWorkspace();
+  return (
+    <Modal
+      open={ws.guardPending}
+      onClose={() => ws.resolveGuard(false)}
+      title="Replace your current work?"
+      footer={
+        <>
+          <button type="button" className="btn btn--ghost" onClick={() => ws.resolveGuard(false)} autoFocus // eslint-disable-line jsx-a11y/no-autofocus -- safe default inside a modal confirmation
+          >
+            Keep working
+          </button>
+          <button type="button" className="btn btn--secondary" onClick={() => { ws.resolveGuard(false); onSaveFirst(); }}>
+            Save project first
+          </button>
+          <button type="button" className="btn btn--danger" onClick={() => ws.resolveGuard(true)} data-testid="discard-go">
+            Discard and continue
+          </button>
+        </>
+      }
+    >
+      <p>
+        The files, rules and notes you have open are only in memory and have not been saved on this device. Continuing replaces them, and they cannot be recovered.
+      </p>
     </Modal>
   );
 }

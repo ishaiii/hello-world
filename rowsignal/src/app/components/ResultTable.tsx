@@ -37,7 +37,6 @@ const TableRow = memo(function TableRow({ row, index, fields, pinKey, annotation
       className={`rt__row rt__row--${row.category} ${selected ? 'is-selected' : ''}`}
       data-row-id={row.id}
       style={top === null ? undefined : { top }}
-      onDoubleClick={() => onOpen(row.id)}
     >
       <div role="rowheader" className={`rt__cell rt__cell--key ${pinKey ? 'is-pinned' : ''}`}>
         <span className="mono truncate" title={label}>

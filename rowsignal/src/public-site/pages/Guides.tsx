@@ -142,6 +142,33 @@ function date(text: string, order: 'DMY' | 'MDY' | null): string {
   return r.ok ? `read as ${r.iso}` : `refused — ${r.reason}`;
 }
 
+function Tbl({ head, rows }: { head: string[]; rows: string[][] }) {
+  return (
+    <div className="table-scroll" tabIndex={0} role="region" aria-label={head.join(', ')}>
+      <table className="dt">
+        <thead>
+          <tr>
+            {head.map((h) => (
+              <th key={h} scope="col">
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={i}>
+              <td className="mono">{r[0]}</td>
+              <td>{r[1]}</td>
+              <td>{r[2]}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export function DatesGuide(_props: PageProps) {
   const route = routeFor('/guides/dates-numbers-and-leading-zeros')!;
   const numRows: Array<[string, string, string]> = [
@@ -167,30 +194,6 @@ export function DatesGuide(_props: PageProps) {
     ['44653', '1904 date system', excelSerialToIso(44653, true).text],
     ['60', '1900 date system', excelSerialToIso(60, false).ok ? 'a date' : 'not a real date (Excel’s 1900 leap-year quirk)'],
   ];
-  const Tbl = ({ head, rows }: { head: string[]; rows: string[][] }) => (
-    <div className="table-scroll" tabIndex={0} role="region" aria-label={head.join(', ')}>
-      <table className="dt">
-        <thead>
-          <tr>
-            {head.map((h) => (
-              <th key={h} scope="col">
-                {h}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r, i) => (
-            <tr key={i}>
-              <td className="mono">{r[0]}</td>
-              <td>{r[1]}</td>
-              <td>{r[2]}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
   return (
     <>
       <PageHead route={route} lead="The cells that look the same on screen are often different underneath. These are the cases that cause false mismatches — and how RowSignal treats them." />

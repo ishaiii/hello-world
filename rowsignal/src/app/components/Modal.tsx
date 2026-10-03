@@ -29,12 +29,14 @@ export function Modal({ open, onClose, title, children, footer, wide, className 
   }, [open]);
 
   return (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
     <dialog
       ref={ref}
       className={`dialog ${wide ? 'dialog--wide' : ''} ${className}`}
       aria-labelledby={titleId}
       aria-describedby={describedBy}
       onClose={onClose}
+      // Backdrop click is a pointer convenience only; keyboard users close with Escape (native <dialog> behaviour).
       onClick={(e) => {
         // A click on the backdrop reports the dialog itself as the target.
         if (e.target === ref.current) onClose();

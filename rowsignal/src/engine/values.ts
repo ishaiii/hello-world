@@ -64,7 +64,7 @@ export type NumberParse = { ok: true; dec: Dec } | { ok: false; reason: string }
 /** Parse a number written as text using the file's explicit decimal/thousands settings. */
 export function parseNumberText(raw: string, fmt: FileFormat): NumberParse {
   let t = raw;
-  if (fmt.thousands === ' ') t = t.replace(/[  ]/g, ' ');
+  if (fmt.thousands === ' ') t = t.replace(/[\u00A0\u202F]/g, ' ');
   let neg = false;
   let signed = false;
   if (t.startsWith('+') || t.startsWith('-') || t.startsWith('−')) {

@@ -51,7 +51,7 @@ function ReturnPanel({ onManage }: { onManage: () => void }) {
           <p className="muted">
             Nothing is saved yet. After a comparison you can save its rules as a <strong>recipe</strong> to reuse next week, or save the whole comparison as a <strong>project</strong>. Saved items appear here, and only here — they never leave this device.
           </p>
-          <button type="button" className="btn btn--secondary" onClick={() => void ws.loadExample('orders', { run: true })}>
+          <button type="button" className="btn btn--secondary" onClick={() => ws.guard(() => void ws.loadExample('orders', { run: true }))}>
             <Sparkles size={18} aria-hidden="true" />
             Try the sample comparison
           </button>
@@ -92,7 +92,7 @@ function ReturnPanel({ onManage }: { onManage: () => void }) {
                       <span className="break">{p.name}</span>
                       <span className="help">{formatWhen(p.savedAt)}</span>
                     </span>
-                    <button type="button" className="btn btn--secondary btn--sm" onClick={() => void ws.openProject(p.id)}>
+                    <button type="button" className="btn btn--secondary btn--sm" onClick={() => ws.guard(() => void ws.openProject(p.id))}>
                       Open
                     </button>
                   </li>
@@ -145,7 +145,7 @@ export function FilesStep({ onManageSaved }: { onManageSaved: () => void }) {
 
       <div className="card actions-card">
         <div className="actions-card__left">
-          <button type="button" className="btn btn--secondary" onClick={() => void ws.loadExample('orders')} disabled={ws.busy}>
+          <button type="button" className="btn btn--secondary" onClick={() => ws.guard(() => void ws.loadExample('orders'))} disabled={ws.busy}>
             <Sparkles size={18} aria-hidden="true" />
             Use sample files
           </button>

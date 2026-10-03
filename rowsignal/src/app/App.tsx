@@ -2,7 +2,7 @@ import { BookMarked, CircleHelp, HardDrive } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Brand } from '../shared/Logo';
 import { FeedbackProvider } from './feedback';
-import { HelpDialog, ProgressDialog, RecipesDialog, SaveProjectDialog, SavedDialog } from './components/Dialogs';
+import { DiscardDialog, HelpDialog, ProgressDialog, RecipesDialog, SaveProjectDialog, SavedDialog } from './components/Dialogs';
 import { FilesStep } from './components/FilesStep';
 import { ResultsStep } from './components/ResultsStep';
 import { RulesStep } from './components/RulesStep';
@@ -103,6 +103,7 @@ function Shell() {
         Files are processed on this device and are not uploaded. <a href="/privacy">Privacy</a> · <a href="/methodology">How matching works</a>
       </footer>
       <ProgressDialog />
+      <DiscardDialog onSaveFirst={() => setDialog('save-project')} />
       <RecipesDialog open={dialog === 'recipes'} onClose={() => setDialog(null)} initialName={state.name.replace(/^Sample: /, '')} />
       <SavedDialog open={dialog === 'saved'} onClose={() => setDialog(null)} />
       <SaveProjectDialog open={dialog === 'save-project'} onClose={() => setDialog(null)} />

@@ -62,7 +62,10 @@ export class WorkerClient {
   private pending = new Map<number, Pending>();
   private sources: Record<Role, Source | null> = { A: null, B: null };
   /** Called when the worker had to be restarted; the UI should treat results as stale. */
-  onReset: (() => void) | null = null;
+  private onReset: (() => void) | null = null;
+  setOnReset(cb: (() => void) | null): void {
+    this.onReset = cb;
+  }
   resetCount = 0;
 
   constructor(

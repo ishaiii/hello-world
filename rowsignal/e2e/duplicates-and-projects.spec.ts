@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { addSampleFiles, configureSampleRules, expectCounts } from './helpers/app';
+import { tempFile } from './helpers/files';
 
 test('duplicate key → understand the reason → return to mapping → add an identifier column', async ({ page }) => {
   await page.goto('/app/?sample=1');
@@ -116,4 +117,19 @@ test('saved recipes and projects can be cleared separately', async ({ page }) =>
   await saved.getByRole('button', { name: /Delete all 1 projects/ }).click();
   await expect(saved.getByTestId('project-item')).toHaveCount(0);
   await expect(saved).toContainText('Recipes (1)');
+});
+
+test('replacing unsaved work asks first; keeping it changes nothing', async ({ page }) => {
+  await page.goto('/app/');
+  await page.getByTestId('file-input-A').setInputFiles(tempFile('mine.csv', 'id,qty\n1,2\n'));
+  await expect(page.getByTestId('file-name-A')).toHaveText('mine.csv');
+  await page.getByRole('button', { name: 'Use sample files' }).click();
+  const dlg = page.getByRole('dialog', { name: 'Replace your current work?' });
+  await expect(dlg).toContainText('cannot be recovered');
+  await dlg.getByRole('button', { name: 'Keep working' }).click();
+  await expect(page.getByTestId('file-name-A')).toHaveText('mine.csv');
+  await page.getByRole('button', { name: 'Use sample files' }).click();
+  await page.getByTestId('discard-go').click();
+  await expect(page.getByTestId('file-name-A')).toHaveText('orders.csv');
+  await expect(page.getByTestId('file-name-B')).toHaveText('dispatch.csv');
 });

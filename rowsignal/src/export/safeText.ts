@@ -19,12 +19,12 @@
  */
 
 const PLAIN_NUMBER = /^[+-]?[0-9][0-9,]*(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?$/;
-const TRIGGERS = new Set(['=', '@', '\t', '\r', '\n', '＝', '＠']);
-const SIGNS = new Set(['+', '-', '＋', '－']);
+const TRIGGERS = new Set(['=', '@', '\t', '\r', '\n', '\uFF1D', '\uFF20']);
+const SIGNS = new Set(['+', '-', '\uFF0B', '\uFF0D']);
 
 export function startsLikeFormula(text: string): boolean {
   if (text === '') return false;
-  const stripped = text.replace(/^[  ]+/, '');
+  const stripped = text.replace(/^[ \u00A0]+/, '');
   if (stripped === '') return false;
   const c = stripped[0]!;
   if (TRIGGERS.has(c)) return true;
