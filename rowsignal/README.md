@@ -18,13 +18,13 @@ and India. **Everything runs in the browser: files are never uploaded.**
 npm ci                 # Node >= 22
 npm run dev            # http://localhost:5173  (public pages are server-rendered on the fly; workspace at /app/)
 
-npm test               # 139 unit/integration tests (vitest)
+npm test               # 140 unit/integration tests (vitest)
 npm run lint           # eslint (typescript-eslint, react-hooks, jsx-a11y)
 npm run typecheck      # tsc --noEmit
 
 npm run build          # typecheck + client build + SSR build + prerender + dist checks
 npm run preview        # serves dist/ on :4173 *with the generated security headers*
-npm run test:e2e       # 40 Playwright specs against the preview server (see below)
+npm run test:e2e       # 46 Playwright specs against the preview server (see below)
 ```
 
 `npm run test:e2e` expects Chromium. In this repository's environment it is at

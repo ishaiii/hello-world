@@ -31,8 +31,8 @@
 - [x] Ads/analytics integration points, disabled by default and tested absent
 
 ## Verification & docs
-- [x] 139 unit/integration tests pass
-- [x] 40 e2e specs pass (flows, privacy/network/CSP audit, axe on every page/step/dialog, keyboard, mobile, overflow at 5 widths)
+- [x] 140 unit/integration tests pass
+- [x] 46 e2e specs pass (flows, privacy/network/CSP audit, axe on every page/step/dialog, keyboard, mobile, overflow at 5 widths)
 - [x] Screenshots reviewed (desktop/tablet/phone) and issues fixed
 - [x] Benchmarks recorded (docs/benchmarks, docs/VERIFICATION.md)
 - [x] README, ARCHITECTURE, VERIFICATION, LAUNCH_CHECKLIST, ADS_AND_ANALYTICS, THIRD_PARTY, deploy examples

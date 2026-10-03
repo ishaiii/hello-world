@@ -143,18 +143,21 @@ export function WorkspaceProvider({ children, initialUrl }: { children: ReactNod
   const jobs = useRef<{ compare?: Job<ComparisonResult>; suggest?: Job<unknown> }>({});
   const [busy, setBusy] = useState(false);
   const bootRef = useRef(false);
-  const [guardFn, setGuardFn] = useState<(() => void) | null>(null);
+  const [guardPending, setGuardPending] = useState(false);
+  const guardRef = useRef<(() => void) | null>(null);
   const guard = useCallback((fn: () => void) => {
     const s = stateRef.current;
     const hasWork = s.dirty && !s.sample && (s.files.A.status === 'ready' || s.files.B.status === 'ready');
-    if (hasWork) setGuardFn(() => fn);
-    else fn();
+    if (hasWork) {
+      guardRef.current = fn;
+      setGuardPending(true);
+    } else fn();
   }, []);
   const resolveGuard = useCallback((ok: boolean) => {
-    setGuardFn((fn) => {
-      if (ok && fn) setTimeout(fn, 0);
-      return null;
-    });
+    const fn = guardRef.current;
+    guardRef.current = null;
+    setGuardPending(false);
+    if (ok && fn) setTimeout(fn, 0);
   }, []);
 
   // ---- helpers -----------------------------------------------------------------------------
@@ -863,10 +866,10 @@ export function WorkspaceProvider({ children, initialUrl }: { children: ReactNod
       newComparison,
       workerResets: () => client.resetCount,
       guard,
-      guardPending: guardFn !== null,
+      guardPending,
       resolveGuard,
     }),
-    [state, busy, goto, addFile, addFiles, removeFile, swapFiles, reparse, loadExample, updateConfig, applySuggestedMapping, addKey, addField, compare, cancelRun, getDetail, setAnnotation, findPossible, cancelSuggest, linkRows, unlinkRows, exportResults, saveRecipeAs, useRecipe, importRecipeFile, exportRecipe, removeRecipe, wipeRecipes, saveProjectAs, openProject, removeProject, wipeProjects, newComparison, client, guard, guardFn, resolveGuard],
+    [state, busy, goto, addFile, addFiles, removeFile, swapFiles, reparse, loadExample, updateConfig, applySuggestedMapping, addKey, addField, compare, cancelRun, getDetail, setAnnotation, findPossible, cancelSuggest, linkRows, unlinkRows, exportResults, saveRecipeAs, useRecipe, importRecipeFile, exportRecipe, removeRecipe, wipeRecipes, saveProjectAs, openProject, removeProject, wipeProjects, newComparison, client, guard, guardPending, resolveGuard],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

@@ -98,6 +98,13 @@ describe('CSV parsing', () => {
     expect(later.info.aboveHeader).toBe(1);
   });
 
+  it('falls back to the first row, with a warning, when a saved header row does not exist in this file', () => {
+    const r = loadCsv('id,qty\n1,2\n', 'f.csv', { headerRow: 7 });
+    expect(r.info.headerRow).toBe(1);
+    expect(r.table.columns.map((c) => c.header)).toEqual(['id', 'qty']);
+    expect(r.info.warnings.some((w) => /Row 7 .* is blank or missing/.test(w))).toBe(true);
+  });
+
   it('gives duplicate headers stable ids and visible disambiguation', () => {
     const r = loadCsv('Qty,Name,Qty\n1,a,2\n');
     expect(r.table.columns.map((c) => c.id)).toEqual(['c0', 'c1', 'c2']);

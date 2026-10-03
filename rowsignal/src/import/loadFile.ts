@@ -192,7 +192,13 @@ export function loadFileData(
     throw new UserFacingError('no-data', `“${fileName}” has no data${sheet ? ` on the sheet “${sheet}”` : ''}. Choose another sheet or file.`);
   }
 
-  const headerRow = options.headerRow === undefined ? grid.rowNumbers[0]! : options.headerRow;
+  // A header row from saved settings may not exist in a different file (fewer rows, or blank there).
+  // Fall back to the first row and say so, instead of failing the whole load.
+  let headerRow: number | null = options.headerRow === undefined ? grid.rowNumbers[0]! : options.headerRow;
+  if (headerRow !== null && !grid.rowNumbers.includes(headerRow)) {
+    warnings.push(`Row ${headerRow} (the header row in your settings) is blank or missing in this file, so row ${grid.rowNumbers[0]} was used instead. Check the header row.`);
+    headerRow = grid.rowNumbers[0]!;
+  }
   const table = new ArrayTable(grid, headerRow);
 
   if (grid.formulaCells > 0) {
