@@ -187,9 +187,21 @@ function show(canon: Canon, raw: string): string {
   return canon.v;
 }
 
-function onlyWhitespaceOrCaseDiffers(a: string, b: string): 'space' | 'case' | null {
-  if (a.trim() === b.trim() && a !== b) return 'space';
-  if (a.toLowerCase() === b.toLowerCase() && a !== b) return 'case';
+/** Which not-yet-enabled options would make two texts equal? Never suggests an option that is already on. */
+function reconcilingOptions(a: string, b: string, rule: { trim: boolean; caseInsensitive: boolean }): 'space' | 'case' | 'both' | null {
+  const needTrim = !rule.trim;
+  const needCase = !rule.caseInsensitive;
+  // Start from what the active options already do, then ask what else would make the two equal.
+  const base = (x: string) => {
+    let y = rule.trim ? x.trim() : x;
+    if (rule.caseInsensitive) y = y.toLowerCase();
+    return y;
+  };
+  const a0 = base(a);
+  const b0 = base(b);
+  if (needTrim && a0.trim() === b0.trim()) return 'space';
+  if (needCase && a0.toLowerCase() === b0.toLowerCase()) return 'case';
+  if (needTrim && needCase && a0.trim().toLowerCase() === b0.trim().toLowerCase()) return 'both';
   return null;
 }
 
@@ -235,9 +247,10 @@ export function compareCanon(
 
   let hint = '';
   if (rule.kind === 'text' || rule.kind === 'identifier') {
-    const why = onlyWhitespaceOrCaseDiffers(aRaw, bRaw);
+    const why = reconcilingOptions(aRaw, bRaw, rule);
     if (why === 'space') hint = ' The values differ only by spaces around them; turn on “Ignore spaces around values” to treat them as equal.';
     if (why === 'case') hint = ' The values differ only by upper/lower case; turn on “Ignore upper/lower case” to treat them as equal.';
+    if (why === 'both') hint = ' The values differ only by spaces and upper/lower case; turn on “Ignore spaces around values” and “Ignore upper/lower case” to treat them as equal.';
   }
   return {
     status: 'd',

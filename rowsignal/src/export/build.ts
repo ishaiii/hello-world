@@ -18,9 +18,9 @@ export interface ExportOptions {
   format: 'csv' | 'xlsx';
   /** `filtered` uses `rowIds`; `all` ignores it. */
   scope: 'all' | 'filtered';
-  rowIds?: readonly string[] | null;
+  rowIds?: string[] | null;
   /** Compared fields to include (by rule id); `null` = all mapped fields. */
-  fieldIds: readonly string[] | null;
+  fieldIds: string[] | null;
   includeNormalized: boolean;
   includeReasons: boolean;
   includeRowRefs: boolean;

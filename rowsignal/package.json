@@ -9,8 +9,16 @@
     "node": ">=22"
   },
   "scripts": {
-    "test": "vitest run",
+    "dev": "vite",
+    "build:client": "vite build",
+    "build:ssr": "vite build --ssr src/public-site/entry-server.tsx --outDir dist-ssr",
+    "prerender": "node scripts/prerender.mjs",
+    "build": "tsc --noEmit && npm run build:client && npm run build:ssr && npm run prerender",
+    "preview": "node scripts/serve.mjs",
     "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
     "fixtures": "tsx scripts/make-fixtures.ts"
   },
   "dependencies": {

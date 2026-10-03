@@ -153,6 +153,17 @@ describe('field rules are applied only when enabled', () => {
     expect(r.rows[0]!.reasons.join(' ')).toMatch(/Ignore spaces around values/);
   });
 
+  it('names exactly the options that would reconcile two values, and never one already on', async () => {
+    const hint = async (a: string, b: string, rule: object) => {
+      const r = await runCsv(csv([['id', 's'], ['1', a]]), csv([['id', 's'], ['1', b]]), cfg({ fields: [{ aColumn: 'c1', ...rule }] }));
+      return r.rows[0]!.reasons.join(' ');
+    };
+    expect(await hint('mug', ' MUG ', {})).toMatch(/spaces and upper\/lower case; turn on “Ignore spaces around values” and “Ignore upper\/lower case”/);
+    expect(await hint('mug', ' MUG ', { trim: true })).toMatch(/only by upper\/lower case/);
+    expect(await hint('mug', ' MUG ', { caseInsensitive: true })).toMatch(/only by spaces/);
+    expect(await hint('mug', 'cup', {})).not.toMatch(/turn on/);
+  });
+
   it('does not remove punctuation, accents or internal spaces', async () => {
     const r = await runCsv(csv([['id', 's'], ['1', 'café-1 x']]), csv([['id', 's'], ['1', 'cafe1x']]), cfg({ fields: [{ aColumn: 'c1', trim: true, caseInsensitive: true }] }));
     expect(r.summary.different).toBe(1);
