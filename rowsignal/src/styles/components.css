@@ -190,9 +190,9 @@
 }
 .check input {
   flex: none;
-  width: 20px;
-  height: 20px;
-  margin: 1px 0 0;
+  width: 24px; /* WCAG 2.2 target size (2.5.8): at least 24 x 24 CSS px */
+  height: 24px;
+  margin: 0;
   accent-color: var(--brand);
   cursor: pointer;
 }
@@ -493,6 +493,7 @@ details.disclosure[open] > summary::before {
 
 /* ---------- Plain data tables ---------- */
 .table-scroll {
+  position: relative; /* contains absolutely positioned .sr-only text so it cannot widen the page */
   overflow: auto;
   max-width: 100%;
   border: 1px solid var(--border);

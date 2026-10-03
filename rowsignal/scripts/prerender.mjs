@@ -87,7 +87,11 @@ for (const p of paths) headers += block(p, [`Content-Security-Policy: ${publicCs
 headers += block('/404.html', [`Content-Security-Policy: ${publicCsp}`]);
 headers += block('/app', [`Content-Security-Policy: ${appCsp}`, 'X-Robots-Tag: noindex, nofollow']);
 headers += block('/app/*', [`Content-Security-Policy: ${appCsp}`, 'X-Robots-Tag: noindex, nofollow']);
-headers += block('/assets/*', ['Cache-Control: public, max-age=31536000, immutable']);
+// The engine worker takes the policy of its own script response: no network at all.
+headers += block('/assets/*', [
+  'Cache-Control: public, max-age=31536000, immutable',
+  "Content-Security-Policy: default-src 'none'; script-src 'self'; connect-src 'none'; base-uri 'none'; frame-ancestors 'none'",
+]);
 await write('_headers', headers);
 
 console.log(`Prerendered ${paths.length + 1} pages${baseUrl ? ` for ${baseUrl}` : ''}.`);

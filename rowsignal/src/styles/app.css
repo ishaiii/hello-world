@@ -1283,3 +1283,7 @@ dialog.dialog--drawer[open] {
     padding-inline: var(--s3);
   }
 }
+
+.filechip:focus-visible {
+  outline-offset: 2px;
+}

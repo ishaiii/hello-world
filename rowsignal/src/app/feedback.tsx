@@ -51,7 +51,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true" data-testid="live-region">
         {live}
       </div>
-      <div className="toasts" aria-label="Notifications">
+      <div className="toasts">
         {toasts.map((t) => (
           <div key={t.id} className={`toast ${t.kind === 'error' ? 'toast--error' : ''}`} role={t.kind === 'error' ? 'alert' : 'status'}>
             {t.kind === 'error' ? <CircleAlert size={18} aria-hidden="true" /> : t.kind === 'success' ? <CircleCheck size={18} aria-hidden="true" /> : <Info size={18} aria-hidden="true" />}

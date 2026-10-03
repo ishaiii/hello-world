@@ -1,5 +1,5 @@
 import { CircleAlert, CircleCheck, FileSpreadsheet, LoaderCircle, RefreshCw, TriangleAlert, Trash2, Upload } from 'lucide-react';
-import { useId, useRef, useState, type DragEvent } from 'react';
+import { useEffect, useId, useRef, useState, type DragEvent } from 'react';
 import type { Role } from '../../engine/types';
 import { DELIMITER_LABELS, type DelimiterChoice } from '../../import/csv';
 import { ENCODING_LABELS, type EncodingChoice } from '../../import/encoding';
@@ -22,7 +22,15 @@ export function FileCard({ role }: { role: Role }) {
   const delimId = useId();
   const encId = useId();
 
-  const pick = () => inputRef.current?.click();
+  const chipRef = useRef<HTMLDivElement>(null);
+  const chooseRef = useRef<HTMLButtonElement>(null);
+  /** Set when the keyboard/pointer user acted on this card, so focus can follow the UI change. */
+  const refocus = useRef<'chip' | 'choose' | null>(null);
+
+  const pick = () => {
+    refocus.current = 'chip';
+    inputRef.current?.click();
+  };
   const onFiles = (list: FileList | null) => {
     if (!list || list.length === 0) return;
     void ws.addFiles(role, Array.from(list));
@@ -34,6 +42,17 @@ export function FileCard({ role }: { role: Role }) {
   };
 
   const loading = slot.status === 'loading';
+  // The control that had focus is replaced when a file loads or is removed; keep focus on this card.
+  useEffect(() => {
+    if (slot.status === 'ready' && refocus.current === 'chip') {
+      refocus.current = null;
+      if (document.activeElement === document.body || !document.activeElement) chipRef.current?.focus({ preventScroll: true });
+    }
+    if (slot.status === 'empty' && refocus.current === 'choose') {
+      refocus.current = null;
+      chooseRef.current?.focus();
+    }
+  }, [slot.status]);
   const showDrop = slot.status === 'empty' || slot.status === 'error' || (loading && !info);
 
   return (
@@ -88,7 +107,7 @@ export function FileCard({ role }: { role: Role }) {
           {!loading && (
             <>
               <p className="help">or</p>
-              <button type="button" className="btn btn--primary" onClick={pick}>
+              <button ref={chooseRef} type="button" className="btn btn--primary" onClick={pick}>
                 <FileSpreadsheet size={18} aria-hidden="true" />
                 Choose file for File {role}
               </button>
@@ -108,7 +127,7 @@ export function FileCard({ role }: { role: Role }) {
 
       {info && !showDrop && (
         <div className="filecard__loaded">
-          <div className="filechip">
+          <div className="filechip" ref={chipRef} tabIndex={-1} role="group" aria-label={`File ${role} loaded: ${info.fileName}`}>
             <FileSpreadsheet size={22} aria-hidden="true" className="filechip__icon" />
             <div className="filechip__text">
               <span className="filechip__name break" title={info.fileName} data-testid={`file-name-${role}`}>
@@ -129,7 +148,14 @@ export function FileCard({ role }: { role: Role }) {
               <RefreshCw size={16} aria-hidden="true" />
               Replace
             </button>
-            <button type="button" className="btn btn--ghost btn--sm" onClick={() => void ws.removeFile(role)}>
+            <button
+              type="button"
+              className="btn btn--ghost btn--sm"
+              onClick={() => {
+                refocus.current = 'choose';
+                void ws.removeFile(role);
+              }}
+            >
               <Trash2 size={16} aria-hidden="true" />
               Remove
             </button>

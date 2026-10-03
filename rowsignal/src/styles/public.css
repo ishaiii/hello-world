@@ -607,3 +607,14 @@
 .example__file {
   min-width: 0;
 }
+
+/* Grid and flex children must be allowed to shrink below their content so scrollable tables stay inside. */
+.hero__grid > *,
+.cols-2 > *,
+.cols-3 > *,
+.example__inputs > *,
+.demo__tables > *,
+.page-body > *,
+.site-footer__grid > * {
+  min-width: 0;
+}

@@ -1,6 +1,10 @@
 /** Runtime validation for configuration objects that cross a trust boundary (worker, recipe import). */
 import { z } from 'zod';
 
+// Zod's JIT fast path probes `new Function`, which a strict Content-Security-Policy forbids (and reports).
+// The schemas here are small, so the plain interpreter is plenty fast.
+z.config({ jitless: true });
+
 export const fileFormatSchema = z.strictObject({
   decimal: z.enum(['.', ',']),
   thousands: z.enum(['none', ',', '.', ' ']),
