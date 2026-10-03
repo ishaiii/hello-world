@@ -124,6 +124,24 @@ export function detectKind(fileName: string, bytes: Uint8Array): FileKind {
   return 'xlsx';
 }
 
+/**
+ * Cheap checks that need only the name and size, so an unsupported or oversized file is refused
+ * before any bytes are read into memory.
+ */
+export function precheckFile(fileName: string, size: number, limits: Limits = DEFAULT_LIMITS): UserFacingError | null {
+  const ext = extensionOf(fileName);
+  const reject = REJECT_BY_EXTENSION[ext];
+  if (reject) return new UserFacingError('unsupported-type', reject);
+  if (ext !== 'csv' && ext !== 'xlsx') {
+    return new UserFacingError('unsupported-type', `“${fileName}” is not a .csv or .xlsx file. RowSignal reads CSV text files and Excel .xlsx workbooks.`);
+  }
+  if (size === 0) return new UserFacingError('empty-file', `“${fileName}” is empty.`);
+  if (size > limits.maxFileBytes) {
+    return new UserFacingError('file-too-large', `“${fileName}” is ${formatBytes(size)}, which is more than the ${formatBytes(limits.maxFileBytes)} limit. Remove unneeded columns or split the file.`);
+  }
+  return null;
+}
+
 function clipCell(s: string, n: number): string {
   return s.length > n ? s.slice(0, n - 1) + '…' : s;
 }

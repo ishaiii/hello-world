@@ -209,13 +209,18 @@ export function suggestMapping(a: TableData, b: TableData): MappingSuggestion {
       bUniqueness: uniq(pb[c.j]!),
     });
   }
-  // A key is a pair that looks like an identifier and is (nearly) unique on both sides.
-  const idish = (p: PairSuggestion) => {
-    const ta = headerTokens(a.columns.find((c) => c.id === p.aColumn)!.header);
-    return ta.includes('id') || ta.includes('sku') || ta.includes('email');
+  // A key is a pair that looks like an identifier. A column headed "ID"/"Number" with a few repeats
+  // is still the likely key (the repeats are what the duplicate-key report exists for), so header
+  // meaning ranks first and uniqueness only has to clear a bar.
+  const rank = (p: PairSuggestion): number => {
+    const tokens = headerTokens(a.columns.find((c) => c.id === p.aColumn)!.header);
+    if (tokens.includes('id')) return 3;
+    if (tokens.includes('sku') || tokens.includes('email')) return 2;
+    return p.kind === 'identifier' ? 1 : 0;
   };
-  const keyCands = pairs.filter((p) => p.aUniqueness >= 0.95 && p.bUniqueness >= 0.95 && (idish(p) || p.kind === 'identifier'));
-  keyCands.sort((x, y) => Number(idish(y)) - Number(idish(x)) || y.score - x.score);
+  const bar = (p: PairSuggestion) => (rank(p) === 3 ? 0.8 : 0.95);
+  const keyCands = pairs.filter((p) => rank(p) > 0 && p.aUniqueness >= bar(p) && p.bUniqueness >= bar(p));
+  keyCands.sort((x, y) => rank(y) - rank(x) || Math.min(y.aUniqueness, y.bUniqueness) - Math.min(x.aUniqueness, x.bUniqueness) || y.score - x.score);
   const key = keyCands[0];
   const keys = key ? [{ ...key, kind: 'identifier' as FieldKind }] : [];
   const fields = pairs.filter((p) => p !== key);
