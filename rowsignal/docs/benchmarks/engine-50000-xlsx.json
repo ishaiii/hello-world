@@ -1,0 +1,35 @@
+{
+ "rows": 50000,
+ "kind": "xlsx",
+ "fileBytes": {
+  "A": 3348133,
+  "B": 3487593
+ },
+ "parseMs": {
+  "A": 999,
+  "B": 934
+ },
+ "compareMs": 831,
+ "summary": {
+  "matched": 45685,
+  "different": 2532,
+  "pairs": 48217,
+  "manualPairs": 0,
+  "onlyA": 1783,
+  "onlyB": 1500,
+  "ambiguousGroups": 0,
+  "ambiguousRowsA": 0,
+  "ambiguousRowsB": 0,
+  "invalidA": 0,
+  "invalidB": 0
+ },
+ "balanced": true,
+ "heapUsedMB": 216,
+ "rssMB": 383,
+ "env": {
+  "node": "v22.22.0",
+  "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+  "cores": 4,
+  "memGB": 16
+ }
+}

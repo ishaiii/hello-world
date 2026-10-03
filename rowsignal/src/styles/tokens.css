@@ -1,0 +1,84 @@
+/* Design tokens. Colours are the brief's starting values, adjusted only where measured contrast
+   in context required it (see --teal-text, --control-border). */
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('../../node_modules/@fontsource-variable/inter/files/inter-latin-ext-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('../../node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  color-scheme: light;
+
+  --canvas: #f6f8fc;
+  --surface: #ffffff;
+  --surface-2: #f1f4fa;
+  --text: #17253b;
+  --text-2: #52627a;
+
+  --brand: #2457d6;
+  --brand-hover: #1c43a8;
+  --brand-tint: #eaf0ff;
+
+  --teal: #087f78;
+  --teal-text: #066b65; /* teal text on --teal-tint needs a darker shade to reach 4.5:1 */
+  --teal-tint: #e7f5f2;
+  --amber: #925b08;
+  --amber-tint: #fff4db;
+  --amber-line: #d9a441;
+  --red: #b4233b;
+  --red-tint: #fff0f3;
+
+  --border: #dce3ed;
+  --control-border: #78879d; /* interactive boundaries must reach 3:1 against their background */
+  --focus: #2457d6;
+
+  --font: 'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', 'Noto Sans Devanagari', 'Noto Sans CJK JP', sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+  --s8: 72px;
+
+  --r-panel: 14px;
+  --r-control: 9px;
+
+  --shadow-1: 0 1px 2px rgba(23, 37, 59, 0.06), 0 1px 1px rgba(23, 37, 59, 0.04);
+  --shadow-2: 0 10px 30px rgba(23, 37, 59, 0.12), 0 2px 6px rgba(23, 37, 59, 0.06);
+
+  --t-fast: 140ms;
+  --t-panel: 200ms;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+
+  --header-h: 60px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --t-fast: 0ms;
+    --t-panel: 0ms;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

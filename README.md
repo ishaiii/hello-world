@@ -1,3 +1,7 @@
+> **RowSignal** — a local-first spreadsheet comparison tool — lives in [`rowsignal/`](rowsignal/README.md)
+> (README, architecture, verification report and launch checklist are in that folder). The rest of this
+> repository is the original GitHub Pages starter.
+
 # Welcome to GitHub
 
 Welcome to GitHub—where millions of developers work together on software. Ready to get started? Let’s learn how this all works by building and publishing your first GitHub Pages website!

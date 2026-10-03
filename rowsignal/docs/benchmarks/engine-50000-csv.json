@@ -1,0 +1,35 @@
+{
+ "rows": 50000,
+ "kind": "csv",
+ "fileBytes": {
+  "A": 4187604,
+  "B": 4164252
+ },
+ "parseMs": {
+  "A": 79,
+  "B": 146
+ },
+ "compareMs": 826,
+ "summary": {
+  "matched": 45685,
+  "different": 2532,
+  "pairs": 48217,
+  "manualPairs": 0,
+  "onlyA": 1783,
+  "onlyB": 1500,
+  "ambiguousGroups": 0,
+  "ambiguousRowsA": 0,
+  "ambiguousRowsB": 0,
+  "invalidA": 0,
+  "invalidB": 0
+ },
+ "balanced": true,
+ "heapUsedMB": 129,
+ "rssMB": 256,
+ "env": {
+  "node": "v22.22.0",
+  "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+  "cores": 4,
+  "memGB": 16
+ }
+}
